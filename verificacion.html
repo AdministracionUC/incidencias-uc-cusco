@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificación de ronda - UC Continental Cusco</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="contenedor">
+  <nav class="tabs">
+    <a href="incidencia.html">Reportar incidencia</a>
+    <a href="verificacion.html" class="activo">Verificación de ronda</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+
+  <h1>Verificación de ronda</h1>
+  <p class="subtitulo">Registra una revisión rápida de rutina, aunque todo esté en orden. Esto alimenta el % de eficiencia.</p>
+
+  <form id="formVerificacion">
+    <label for="nombre">Nombre del trabajador</label>
+    <select id="nombre" required>
+      <option value="">Selecciona...</option>
+    </select>
+
+    <label for="zona">Zona verificada</label>
+    <select id="zona" required>
+      <option value="">Selecciona...</option>
+    </select>
+
+    <label>¿Se encuentra en su puesto?</label>
+    <div class="radio-grupo">
+      <label><input type="radio" name="enPuesto" value="Si" required> Sí</label>
+      <label><input type="radio" name="enPuesto" value="No"> No</label>
+    </div>
+
+    <label>¿Está realizando su actividad correspondiente?</label>
+    <div class="radio-grupo">
+      <label><input type="radio" name="actividad" value="Si" required> Sí</label>
+      <label><input type="radio" name="actividad" value="No"> No</label>
+    </div>
+
+    <label for="observacion">Observación (opcional)</label>
+    <textarea id="observacion" placeholder="Comentario adicional..."></textarea>
+
+    <button type="submit" id="btnEnviar">Registrar verificación</button>
+    <div class="mensaje" id="mensaje"></div>
+  </form>
+</div>
+
+<script src="config.js"></script>
+<script>
+async function cargarDatos() {
+  const personal = await gasGet('personal');
+  const zonas = await gasGet('zonas');
+
+  const selNombre = document.getElementById('nombre');
+  personal.forEach(p => {
+    const op = document.createElement('option');
+    op.value = p.nombre;
+    op.textContent = `${p.nombre} (${p.area})`;
+    selNombre.appendChild(op);
+  });
+
+  const selZona = document.getElementById('zona');
+  zonas.forEach(z => {
+    const op = document.createElement('option');
+    op.value = z.codigo;
+    op.textContent = `${z.codigo} - ${z.nombre}`;
+    selZona.appendChild(op);
+  });
+}
+
+document.getElementById('formVerificacion').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btnEnviar');
+  const msg = document.getElementById('mensaje');
+  btn.disabled = true;
+  msg.className = 'mensaje';
+
+  const body = {
+    tipo: 'verificacion',
+    nombre: document.getElementById('nombre').value,
+    zona: document.getElementById('zona').value,
+    enPuesto: document.querySelector('input[name="enPuesto"]:checked')?.value,
+    realizandoActividad: document.querySelector('input[name="actividad"]:checked')?.value,
+    observacion: document.getElementById('observacion').value
+  };
+
+  try {
+    const resp = await gasPost(body);
+    if (resp.ok) {
+      msg.textContent = 'Verificación registrada correctamente.';
+      msg.className = 'mensaje ok';
+      e.target.reset();
+    } else {
+      msg.textContent = 'Error: ' + (resp.error || 'no se pudo registrar');
+      msg.className = 'mensaje error';
+    }
+  } catch (err) {
+    msg.textContent = 'Error de conexión: ' + err.message;
+    msg.className = 'mensaje error';
+  }
+  btn.disabled = false;
+});
+
+cargarDatos();
+</script>
+</body>
+</html>
