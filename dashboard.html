@@ -24,8 +24,8 @@
       <option value="Limpieza">Limpieza</option>
     </select>
     <select id="fNombre"><option value="">Todo el personal</option></select>
-    <input type="text" id="fDesde" placeholder="Desde (aaaa-mm-dd)">
-    <input type="text" id="fHasta" placeholder="Hasta (aaaa-mm-dd)">
+    <input type="date" id="fDesde">
+    <input type="date" id="fHasta">
   </div>
 
   <div class="tarjetas">
@@ -63,14 +63,20 @@
 <script src="config.js"></script>
 <script>
 async function cargarPersonal() {
-  const personal = await gasGet('personal');
   const sel = document.getElementById('fNombre');
+  sel.disabled = true;
+  sel.innerHTML = '<option value="">Cargando...</option>';
+
+  const personal = await gasGet('personal');
+
+  sel.innerHTML = '<option value="">Todo el personal</option>';
   personal.forEach(p => {
     const op = document.createElement('option');
     op.value = p.nombre;
     op.textContent = p.nombre;
     sel.appendChild(op);
   });
+  sel.disabled = false;
 }
 
 function filtrosActuales() {
