@@ -51,24 +51,35 @@
 <script src="config.js"></script>
 <script>
 async function cargarDatos() {
-  const personal = await gasGet('personal');
-  const zonas = await gasGet('zonas');
-
   const selNombre = document.getElementById('nombre');
+  const selZona = document.getElementById('zona');
+  selNombre.disabled = true;
+  selZona.disabled = true;
+  selNombre.innerHTML = '<option value="">Cargando personal...</option>';
+  selZona.innerHTML = '<option value="">Cargando zonas...</option>';
+
+  const [personal, zonas] = await Promise.all([
+    gasGet('personal'),
+    gasGet('zonas')
+  ]);
+
+  selNombre.innerHTML = '<option value="">Selecciona...</option>';
   personal.forEach(p => {
     const op = document.createElement('option');
     op.value = p.nombre;
     op.textContent = `${p.nombre} (${p.area})`;
     selNombre.appendChild(op);
   });
+  selNombre.disabled = false;
 
-  const selZona = document.getElementById('zona');
+  selZona.innerHTML = '<option value="">Selecciona...</option>';
   zonas.forEach(z => {
     const op = document.createElement('option');
     op.value = z.codigo;
     op.textContent = `${z.codigo} - ${z.nombre}`;
     selZona.appendChild(op);
   });
+  selZona.disabled = false;
 }
 
 document.getElementById('formVerificacion').addEventListener('submit', async (e) => {
