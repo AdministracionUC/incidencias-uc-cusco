@@ -26,6 +26,7 @@
     <select id="fNombre"><option value="">Todo el personal</option></select>
     <input type="date" id="fDesde">
     <input type="date" id="fHasta">
+    <button type="button" id="btnBuscar" style="margin-top:0; flex:0 0 auto; padding:10px 20px;">Buscar</button>
   </div>
 
   <div class="tarjetas">
@@ -131,6 +132,7 @@ async function cargarTablas() {
 document.querySelectorAll('.filtros select, .filtros input').forEach(el => {
   el.addEventListener('change', cargarTablas);
 });
+document.getElementById('btnBuscar').addEventListener('click', cargarTablas);
 
 cargarPersonal();
 cargarTablas();
