@@ -53,25 +53,38 @@ let personal = [];
 let catalogo = [];
 
 async function cargarDatos() {
-  personal = await gasGet('personal');
-  catalogo = await gasGet('catalogo');
-  const zonas = await gasGet('zonas');
-
   const selNombre = document.getElementById('nombre');
+  const selZona = document.getElementById('zona');
+  selNombre.disabled = true;
+  selZona.disabled = true;
+  selNombre.innerHTML = '<option value="">Cargando personal...</option>';
+  selZona.innerHTML = '<option value="">Cargando zonas...</option>';
+
+  const [personalData, catalogoData, zonasData] = await Promise.all([
+    gasGet('personal'),
+    gasGet('catalogo'),
+    gasGet('zonas')
+  ]);
+  personal = personalData;
+  catalogo = catalogoData;
+
+  selNombre.innerHTML = '<option value="">Selecciona...</option>';
   personal.forEach(p => {
     const op = document.createElement('option');
     op.value = p.nombre;
     op.textContent = p.nombre;
     selNombre.appendChild(op);
   });
+  selNombre.disabled = false;
 
-  const selZona = document.getElementById('zona');
-  zonas.forEach(z => {
+  selZona.innerHTML = '<option value="">Selecciona...</option>';
+  zonasData.forEach(z => {
     const op = document.createElement('option');
     op.value = z.codigo;
     op.textContent = `${z.codigo} - ${z.nombre}`;
     selZona.appendChild(op);
   });
+  selZona.disabled = false;
 }
 
 document.getElementById('nombre').addEventListener('change', (e) => {
