@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reportar incidencia - UC Continental Cusco</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="contenedor">
+  <nav class="tabs">
+    <a href="incidencia.html" class="activo">Reportar incidencia</a>
+    <a href="verificacion.html">Verificación de ronda</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+
+  <h1>Reportar incidencia</h1>
+  <p class="subtitulo">Registra un problema puntual detectado en el personal de seguridad o limpieza.</p>
+
+  <form id="formIncidencia">
+    <label for="nombre">Nombre del trabajador</label>
+    <select id="nombre" required>
+      <option value="">Selecciona...</option>
+    </select>
+
+    <label>Área (detectada automáticamente)</label>
+    <div class="campo-solo-lectura" id="areaDetectada">—</div>
+
+    <label for="zona">Zona donde ocurrió</label>
+    <select id="zona" required>
+      <option value="">Selecciona...</option>
+    </select>
+
+    <label for="tipo">Tipo de incidencia</label>
+    <select id="tipo" required disabled>
+      <option value="">Primero selecciona un trabajador...</option>
+    </select>
+
+    <label for="descripcion">Descripción (opcional)</label>
+    <textarea id="descripcion" placeholder="Detalles adicionales..."></textarea>
+
+    <label for="reportadoPor">Reportado por</label>
+    <input type="text" id="reportadoPor" placeholder="Tu nombre" required>
+
+    <button type="submit" id="btnEnviar">Registrar incidencia</button>
+    <div class="mensaje" id="mensaje"></div>
+  </form>
+</div>
+
+<script src="config.js"></script>
+<script>
+let personal = [];
+let catalogo = [];
+
+async function cargarDatos() {
+  personal = await gasGet('personal');
+  catalogo = await gasGet('catalogo');
+  const zonas = await gasGet('zonas');
+
+  const selNombre = document.getElementById('nombre');
+  personal.forEach(p => {
+    const op = document.createElement('option');
+    op.value = p.nombre;
+    op.textContent = p.nombre;
+    selNombre.appendChild(op);
+  });
+
+  const selZona = document.getElementById('zona');
+  zonas.forEach(z => {
+    const op = document.createElement('option');
+    op.value = z.codigo;
+    op.textContent = `${z.codigo} - ${z.nombre}`;
+    selZona.appendChild(op);
+  });
+}
+
+document.getElementById('nombre').addEventListener('change', (e) => {
+  const p = personal.find(x => x.nombre === e.target.value);
+  const areaDiv = document.getElementById('areaDetectada');
+  const selTipo = document.getElementById('tipo');
+
+  if (!p) {
+    areaDiv.textContent = '—';
+    selTipo.disabled = true;
+    selTipo.innerHTML = '<option value="">Primero selecciona un trabajador...</option>';
+    return;
+  }
+
+  areaDiv.textContent = p.area;
+  selTipo.disabled = false;
+  selTipo.innerHTML = '<option value="">Selecciona...</option>';
+  catalogo.filter(c => c.area === p.area).forEach(c => {
+    const op = document.createElement('option');
+    op.value = c.tipo;
+    op.textContent = c.tipo;
+    selTipo.appendChild(op);
+  });
+});
+
+document.getElementById('formIncidencia').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btnEnviar');
+  const msg = document.getElementById('mensaje');
+  btn.disabled = true;
+  msg.className = 'mensaje';
+
+  const body = {
+    tipo: 'incidencia',
+    nombre: document.getElementById('nombre').value,
+    zona: document.getElementById('zona').value,
+    tipoIncidencia: document.getElementById('tipo').value,
+    descripcion: document.getElementById('descripcion').value,
+    reportadoPor: document.getElementById('reportadoPor').value
+  };
+
+  try {
+    const resp = await gasPost(body);
+    if (resp.ok) {
+      msg.textContent = 'Incidencia registrada correctamente.';
+      msg.className = 'mensaje ok';
+      e.target.reset();
+      document.getElementById('areaDetectada').textContent = '—';
+      document.getElementById('tipo').disabled = true;
+    } else {
+      msg.textContent = 'Error: ' + (resp.error || 'no se pudo registrar');
+      msg.className = 'mensaje error';
+    }
+  } catch (err) {
+    msg.textContent = 'Error de conexión: ' + err.message;
+    msg.className = 'mensaje error';
+  }
+  btn.disabled = false;
+});
+
+cargarDatos();
+</script>
+</body>
+</html>
