@@ -78,13 +78,31 @@ async function cargarDatos() {
   selNombre.disabled = false;
 
   selZona.innerHTML = '<option value="">Selecciona...</option>';
-  zonasData.forEach(z => {
-    const op = document.createElement('option');
-    op.value = z.codigo;
-    op.textContent = `${z.codigo} - ${z.nombre}`;
-    selZona.appendChild(op);
-  });
+  agruparZonas(selZona, zonasData);
   selZona.disabled = false;
+}
+
+function agruparZonas(selectEl, zonas) {
+  const grupos = { 'Edificio A': [], 'Edificio B': [], 'Edificio C': [], 'Otras zonas': [] };
+  zonas.forEach(z => {
+    if (z.codigo.startsWith('A-')) grupos['Edificio A'].push(z);
+    else if (z.codigo.startsWith('B-')) grupos['Edificio B'].push(z);
+    else if (z.codigo.startsWith('C-')) grupos['Edificio C'].push(z);
+    else grupos['Otras zonas'].push(z);
+  });
+
+  Object.entries(grupos).forEach(([nombreGrupo, lista]) => {
+    if (lista.length === 0) return;
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = nombreGrupo;
+    lista.forEach(z => {
+      const op = document.createElement('option');
+      op.value = z.codigo;
+      op.textContent = `${z.codigo} - ${z.nombre}`;
+      optgroup.appendChild(op);
+    });
+    selectEl.appendChild(optgroup);
+  });
 }
 
 document.getElementById('nombre').addEventListener('change', (e) => {
