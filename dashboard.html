@@ -47,7 +47,7 @@
   <h3>Incidencias</h3>
   <table>
     <thead>
-      <tr><th>Fecha</th><th>Nombre</th><th>Área</th><th>Zona</th><th>Tipo</th><th>Estado</th></tr>
+      <tr><th>Fecha</th><th>Nombre</th><th>Área</th><th>Zona</th><th>Tipo</th></tr>
     </thead>
     <tbody id="tablaIncidencias"></tbody>
   </table>
@@ -112,7 +112,6 @@ async function cargarTablas() {
       <td>${i.area}</td>
       <td>${i.zona}</td>
       <td>${i.tipo}</td>
-      <td>${i.estado}</td>
     </tr>`).join('') || '<tr><td colspan="6">Sin registros</td></tr>';
 
   const verif = await gasGet('verificaciones', filtros);
