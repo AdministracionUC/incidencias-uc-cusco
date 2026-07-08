@@ -23,7 +23,11 @@
       <option value="Seguridad">Seguridad</option>
       <option value="Limpieza">Limpieza</option>
     </select>
-    <select id="fNombre"><option value="">Todo el personal</option></select>
+    <div class="autocomplete-wrap" style="flex:1; min-width:130px;">
+      <input type="text" id="fNombreInput" placeholder="Todo el personal (buscar por nombre o DNI)" autocomplete="off">
+      <input type="hidden" id="fNombre">
+      <div class="autocomplete-list" id="fNombreList"></div>
+    </div>
     <input type="date" id="fDesde">
     <input type="date" id="fHasta">
     <button type="button" id="btnBuscar" style="margin-top:0; width:auto; flex:0 0 auto; padding:10px 20px;">Buscar</button>
@@ -74,20 +78,16 @@
 <script src="config.js"></script>
 <script>
 async function cargarPersonal() {
-  const sel = document.getElementById('fNombre');
-  sel.disabled = true;
-  sel.innerHTML = '<option value="">Cargando...</option>';
-
   const personal = await gasGet('personal');
 
-  sel.innerHTML = '<option value="">Todo el personal</option>';
-  personal.forEach(p => {
-    const op = document.createElement('option');
-    op.value = p.nombre;
-    op.textContent = p.nombre;
-    sel.appendChild(op);
+  crearBuscadorPersonal({
+    inputEl: document.getElementById('fNombreInput'),
+    listEl: document.getElementById('fNombreList'),
+    hiddenEl: document.getElementById('fNombre'),
+    datos: personal,
+    onSeleccionar: () => cargarTablas(),
+    onLimpiar: () => cargarTablas()
   });
-  sel.disabled = false;
 }
 
 function filtrosActuales() {
