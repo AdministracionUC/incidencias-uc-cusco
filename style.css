@@ -104,8 +104,18 @@ th, td {
   text-align: left;
   padding: 8px 10px;
   border-bottom: 1px solid var(--gris-borde);
+  word-break: break-word;
 }
-th { background: #f6f5f1; font-weight: 600; }
+th { background: #f6f5f1; font-weight: 600; white-space: nowrap; }
+
+.tabla-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tabla-scroll table {
+  min-width: 520px;
+}
 
 .filtros {
   display: flex;
@@ -154,4 +164,17 @@ nav.tabs a.activo {
   background: var(--azul);
   color: #fff;
   border-color: var(--azul);
+}
+
+@media (max-width: 480px) {
+  body { padding: 12px 8px 40px; }
+  .contenedor { padding: 18px; }
+  .filtros { flex-direction: column; }
+  .filtros select, .filtros input, .filtros button {
+    width: 100%;
+    flex: none;
+  }
+  .tarjetas { flex-direction: column; }
+  table { font-size: 12px; }
+  th, td { padding: 6px 8px; }
 }
