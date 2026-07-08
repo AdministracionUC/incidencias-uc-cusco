@@ -18,10 +18,12 @@
   <p class="subtitulo">Registra un problema puntual detectado en el personal de seguridad o limpieza.</p>
 
   <form id="formIncidencia">
-    <label for="nombre">Nombre del trabajador</label>
-    <select id="nombre" required>
-      <option value="">Selecciona...</option>
-    </select>
+    <label for="nombreInput">Nombre del trabajador</label>
+    <div class="autocomplete-wrap">
+      <input type="text" id="nombreInput" placeholder="Escribe nombre, apellido o DNI..." autocomplete="off">
+      <input type="hidden" id="nombre">
+      <div class="autocomplete-list" id="nombreList"></div>
+    </div>
 
     <label>Área (detectada automáticamente)</label>
     <div class="campo-solo-lectura" id="areaDetectada">—</div>
@@ -53,11 +55,8 @@ let personal = [];
 let catalogo = [];
 
 async function cargarDatos() {
-  const selNombre = document.getElementById('nombre');
   const selZona = document.getElementById('zona');
-  selNombre.disabled = true;
   selZona.disabled = true;
-  selNombre.innerHTML = '<option value="">Cargando personal...</option>';
   selZona.innerHTML = '<option value="">Cargando zonas...</option>';
 
   const [personalData, catalogoData, zonasData] = await Promise.all([
@@ -68,15 +67,6 @@ async function cargarDatos() {
   personal = personalData;
   catalogo = catalogoData;
 
-  selNombre.innerHTML = '<option value="">Selecciona...</option>';
-  personal.forEach(p => {
-    const op = document.createElement('option');
-    op.value = p.nombre;
-    op.textContent = p.nombre;
-    selNombre.appendChild(op);
-  });
-  selNombre.disabled = false;
-
   selZona.innerHTML = '<option value="">Selecciona...</option>';
   zonasData.forEach(z => {
     const op = document.createElement('option');
@@ -85,10 +75,18 @@ async function cargarDatos() {
     selZona.appendChild(op);
   });
   selZona.disabled = false;
+
+  crearBuscadorPersonal({
+    inputEl: document.getElementById('nombreInput'),
+    listEl: document.getElementById('nombreList'),
+    hiddenEl: document.getElementById('nombre'),
+    datos: personal,
+    onSeleccionar: aplicarPersonaSeleccionada,
+    onLimpiar: () => aplicarPersonaSeleccionada(null)
+  });
 }
 
-document.getElementById('nombre').addEventListener('change', (e) => {
-  const p = personal.find(x => x.nombre === e.target.value);
+function aplicarPersonaSeleccionada(p) {
   const areaDiv = document.getElementById('areaDetectada');
   const selTipo = document.getElementById('tipo');
 
@@ -108,18 +106,31 @@ document.getElementById('nombre').addEventListener('change', (e) => {
     op.textContent = c.tipo;
     selTipo.appendChild(op);
   });
-});
+}
 
 document.getElementById('formIncidencia').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('btnEnviar');
   const msg = document.getElementById('mensaje');
-  btn.disabled = true;
   msg.className = 'mensaje';
+
+  const nombreSeleccionado = document.getElementById('nombre').value;
+  if (!nombreSeleccionado) {
+    msg.textContent = 'Selecciona un trabajador de la lista de resultados (no solo escribas el texto).';
+    msg.className = 'mensaje error';
+    return;
+  }
+  if (!document.getElementById('zona').value || !document.getElementById('tipo').value || !document.getElementById('reportadoPor').value) {
+    msg.textContent = 'Completa todos los campos obligatorios.';
+    msg.className = 'mensaje error';
+    return;
+  }
+
+  btn.disabled = true;
 
   const body = {
     tipo: 'incidencia',
-    nombre: document.getElementById('nombre').value,
+    nombre: nombreSeleccionado,
     zona: document.getElementById('zona').value,
     tipoIncidencia: document.getElementById('tipo').value,
     descripcion: document.getElementById('descripcion').value,
@@ -132,6 +143,8 @@ document.getElementById('formIncidencia').addEventListener('submit', async (e) =
       msg.textContent = 'Incidencia registrada correctamente.';
       msg.className = 'mensaje ok';
       e.target.reset();
+      document.getElementById('nombreInput').value = '';
+      document.getElementById('nombre').value = '';
       document.getElementById('areaDetectada').textContent = '—';
       document.getElementById('tipo').disabled = true;
     } else {
