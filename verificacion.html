@@ -18,10 +18,12 @@
   <p class="subtitulo">Registra una revisión rápida de rutina, aunque todo esté en orden. Esto alimenta el % de eficiencia.</p>
 
   <form id="formVerificacion">
-    <label for="nombre">Nombre del trabajador</label>
-    <select id="nombre" required>
-      <option value="">Selecciona...</option>
-    </select>
+    <label for="nombreInput">Nombre del trabajador</label>
+    <div class="autocomplete-wrap">
+      <input type="text" id="nombreInput" placeholder="Escribe nombre, apellido o DNI..." autocomplete="off">
+      <input type="hidden" id="nombre">
+      <div class="autocomplete-list" id="nombreList"></div>
+    </div>
 
     <label for="zona">Zona verificada</label>
     <select id="zona" required>
@@ -51,26 +53,14 @@
 <script src="config.js"></script>
 <script>
 async function cargarDatos() {
-  const selNombre = document.getElementById('nombre');
   const selZona = document.getElementById('zona');
-  selNombre.disabled = true;
   selZona.disabled = true;
-  selNombre.innerHTML = '<option value="">Cargando personal...</option>';
   selZona.innerHTML = '<option value="">Cargando zonas...</option>';
 
   const [personal, zonas] = await Promise.all([
     gasGet('personal'),
     gasGet('zonas')
   ]);
-
-  selNombre.innerHTML = '<option value="">Selecciona...</option>';
-  personal.forEach(p => {
-    const op = document.createElement('option');
-    op.value = p.nombre;
-    op.textContent = `${p.nombre} (${p.area})`;
-    selNombre.appendChild(op);
-  });
-  selNombre.disabled = false;
 
   selZona.innerHTML = '<option value="">Selecciona...</option>';
   zonas.forEach(z => {
@@ -80,18 +70,40 @@ async function cargarDatos() {
     selZona.appendChild(op);
   });
   selZona.disabled = false;
+
+  crearBuscadorPersonal({
+    inputEl: document.getElementById('nombreInput'),
+    listEl: document.getElementById('nombreList'),
+    hiddenEl: document.getElementById('nombre'),
+    datos: personal,
+    onSeleccionar: () => {},
+    onLimpiar: () => {}
+  });
 }
 
 document.getElementById('formVerificacion').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('btnEnviar');
   const msg = document.getElementById('mensaje');
-  btn.disabled = true;
   msg.className = 'mensaje';
+
+  const nombreSeleccionado = document.getElementById('nombre').value;
+  if (!nombreSeleccionado) {
+    msg.textContent = 'Selecciona un trabajador de la lista de resultados (no solo escribas el texto).';
+    msg.className = 'mensaje error';
+    return;
+  }
+  if (!document.getElementById('zona').value) {
+    msg.textContent = 'Selecciona la zona verificada.';
+    msg.className = 'mensaje error';
+    return;
+  }
+
+  btn.disabled = true;
 
   const body = {
     tipo: 'verificacion',
-    nombre: document.getElementById('nombre').value,
+    nombre: nombreSeleccionado,
     zona: document.getElementById('zona').value,
     enPuesto: document.querySelector('input[name="enPuesto"]:checked')?.value,
     realizandoActividad: document.querySelector('input[name="actividad"]:checked')?.value,
@@ -104,6 +116,8 @@ document.getElementById('formVerificacion').addEventListener('submit', async (e)
       msg.textContent = 'Verificación registrada correctamente.';
       msg.className = 'mensaje ok';
       e.target.reset();
+      document.getElementById('nombreInput').value = '';
+      document.getElementById('nombre').value = '';
     } else {
       msg.textContent = 'Error: ' + (resp.error || 'no se pudo registrar');
       msg.className = 'mensaje error';
