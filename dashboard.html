@@ -45,20 +45,24 @@
   </div>
 
   <h3>Incidencias</h3>
-  <table>
-    <thead>
-      <tr><th>Fecha</th><th>Nombre</th><th>Área</th><th>Zona</th><th>Tipo</th></tr>
-    </thead>
-    <tbody id="tablaIncidencias"></tbody>
-  </table>
+  <div class="tabla-scroll">
+    <table>
+      <thead>
+        <tr><th>Fecha</th><th>Nombre</th><th>Área</th><th>Zona</th><th>Tipo</th></tr>
+      </thead>
+      <tbody id="tablaIncidencias"></tbody>
+    </table>
+  </div>
 
   <h3>Verificaciones de ronda</h3>
-  <table>
-    <thead>
-      <tr><th>Fecha</th><th>Nombre</th><th>Zona</th><th>En puesto</th><th>Actividad</th></tr>
-    </thead>
-    <tbody id="tablaVerificaciones"></tbody>
-  </table>
+  <div class="tabla-scroll">
+    <table>
+      <thead>
+        <tr><th>Fecha</th><th>Nombre</th><th>Zona</th><th>En puesto</th><th>Actividad</th></tr>
+      </thead>
+      <tbody id="tablaVerificaciones"></tbody>
+    </table>
+  </div>
 </div>
 
 <script src="config.js"></script>
@@ -112,7 +116,7 @@ async function cargarTablas() {
       <td>${i.area}</td>
       <td>${i.zona}</td>
       <td>${i.tipo}</td>
-    </tr>`).join('') || '<tr><td colspan="6">Sin registros</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="5">Sin registros</td></tr>';
 
   const verif = await gasGet('verificaciones', filtros);
   document.getElementById('totalVerificaciones').textContent = verif.total;
