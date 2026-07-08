@@ -163,6 +163,34 @@ nav.tabs a.activo {
   border-color: var(--azul);
 }
 
+.autocomplete-wrap {
+  position: relative;
+}
+.autocomplete-list {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--gris-borde);
+  border-radius: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 30;
+  box-shadow: 0 6px 16px rgba(0,0,0,.1);
+}
+.autocomplete-item {
+  padding: 9px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0efe9;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover { background: var(--azul-claro); }
+.autocomplete-nombre { font-size: 14px; font-weight: 600; }
+.autocomplete-sub { font-size: 12px; color: var(--texto-suave); margin-top: 1px; }
+.autocomplete-vacio { padding: 10px 12px; font-size: 13px; color: var(--texto-suave); }
+
 @media (max-width: 480px) {
   body { padding: 12px 8px 40px; }
   .contenedor { padding: 18px; }
